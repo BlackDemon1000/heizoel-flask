@@ -7,6 +7,7 @@ import imaplib
 import email
 from email.message import EmailMessage
 from email.header import decode_header
+from email.policy import default as email_default
 import threading
 import time
 import re
@@ -175,16 +176,25 @@ def _decode_header_value(raw) -> str:
 
 def _get_body(msg) -> str:
     """Gibt den Plain-Text-Inhalt einer E-Mail zurück."""
-    if msg.is_multipart():
-        for part in msg.walk():
-            if part.get_content_type() == "text/plain":
-                return part.get_payload(decode=True).decode(
-                    part.get_content_charset() or "utf-8", errors="replace"
-                )
-    else:
-        return msg.get_payload(decode=True).decode(
-            msg.get_content_charset() or "utf-8", errors="replace"
-        )
+    try:
+        if msg.is_multipart():
+            for part in msg.walk():
+                if part.get_content_type() == "text/plain":
+                    return part.get_content()
+        else:
+            return msg.get_content()
+    except Exception:
+        # Fallback für Mails ohne policy=default
+        if msg.is_multipart():
+            for part in msg.walk():
+                if part.get_content_type() == "text/plain":
+                    return part.get_payload(decode=True).decode(
+                        part.get_content_charset() or "utf-8", errors="replace"
+                    )
+        else:
+            payload = msg.get_payload(decode=True)
+            if payload:
+                return payload.decode(msg.get_content_charset() or "utf-8", errors="replace")
     return ""
 
 def poll_imap():
@@ -203,8 +213,8 @@ def poll_imap():
             with imaplib.IMAP4_SSL(IMAP_SERVER, IMAP_PORT) as imap:
                 imap.login(icloud_login, mail_pass)
 
-                # Ordner auswählen
-                status, _ = imap.select(f'"{IMAP_FOLDER}"')
+                # Ordner auswählen (ohne Anführungszeichen für iCloud)
+                status, _ = imap.select(IMAP_FOLDER)
                 if status != "OK":
                     print(f"[IMAP] Ordner '{IMAP_FOLDER}' nicht gefunden.")
                     time.sleep(POLL_INTERVAL)
@@ -218,9 +228,17 @@ def poll_imap():
                     print(f"[IMAP] {len(ids)} neue Nachricht(en) im Ordner '{IMAP_FOLDER}'")
 
                 for mid in ids:
-                    _, data = imap.fetch(mid, "(RFC822)")
-                    raw = data[0][1]
-                    msg = email.message_from_bytes(raw)
+                    # iCloud benötigt BODY[] statt RFC822
+                    _, data = imap.fetch(mid, "(BODY[])")
+                    raw = None
+                    for part in data:
+                        if isinstance(part, tuple) and len(part) >= 2 and isinstance(part[1], bytes):
+                            raw = part[1]
+                            break
+                    if not raw:
+                        print(f"[IMAP] Kein Inhalt für Mail {mid}")
+                        continue
+                    msg = email.message_from_bytes(raw, policy=email_default)
 
                     subject = _decode_header_value(msg.get("Subject", ""))
                     body    = _get_body(msg)
