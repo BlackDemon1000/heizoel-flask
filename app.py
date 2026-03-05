@@ -212,7 +212,7 @@ def poll_imap():
 
                 # Nur ungelesene Nachrichten
                 _, msg_ids = imap.search(None, "UNSEEN")
-                ids = msg_ids[0].split()
+                ids = msg_ids[0].split() if msg_ids and msg_ids[0] else []
 
                 if ids:
                     print(f"[IMAP] {len(ids)} neue Nachricht(en) im Ordner '{IMAP_FOLDER}'")
