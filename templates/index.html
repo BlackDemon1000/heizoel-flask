@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heizölbestellung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #ff6b2b;
+      --accent2: #ffaa44;
+      --glass:        rgba(255,255,255,.07);
+      --glass-strong: rgba(255,255,255,.11);
+      --glass-border: rgba(255,255,255,.13);
+      --glass-border-h: rgba(255,255,255,.23);
+      --text:    #eef2ff;
+      --text-2:  rgba(195,210,240,.6);
+      --text-m:  rgba(155,180,220,.4);
+      --in-bg:   rgba(255,255,255,.055);
+      --in-bd:   rgba(255,255,255,.12);
+      --r: 18px; --rs: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: #0b1830;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+      background: linear-gradient(140deg, #08101f 0%, #0c1e3a 40%, #0a1628 70%, #070e1c 100%);
+    }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(90px);
+      animation: drift 14s ease-in-out infinite;
+    }
+    .o1 { width:750px;height:750px; background:radial-gradient(circle,rgba(255,95,25,.42),transparent 65%); top:-220px;right:-120px; }
+    .o2 { width:650px;height:650px; background:radial-gradient(circle,rgba(18,70,200,.38),transparent 65%); bottom:-180px;left:-120px; animation-delay:-7s; animation-duration:20s; }
+    .o3 { width:420px;height:420px; background:radial-gradient(circle,rgba(255,155,35,.28),transparent 65%); top:42%;left:28%; animation-delay:-3.5s; animation-duration:11s; }
+    .o4 { width:360px;height:360px; background:radial-gradient(circle,rgba(45,115,255,.22),transparent 65%); top:18%;right:28%; animation-delay:-9s; animation-duration:17s; }
+    @keyframes drift {
+      0%,100% { transform:translate(0,0) scale(1); }
+      33%      { transform:translate(45px,-35px) scale(1.09); }
+      66%      { transform:translate(-35px,45px) scale(.93); }
+    }
+    .noise {
+      position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.022;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:180px;
+    }
+
+    /* ── WRAPPER ── */
+    .wrap { position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column; }
+
+    /* ── HEADER ── */
+    header {
+      padding:0 36px;
+      position:sticky;top:0;z-index:100;
+      backdrop-filter:blur(28px) saturate(1.6);
+      -webkit-backdrop-filter:blur(28px) saturate(1.6);
+      background:rgba(8,14,28,.52);
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
+    .hdr { max-width:1180px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between; }
+
+    .logo { display:flex;align-items:center;gap:10px;font-size:1.05rem;font-weight:700;color:var(--text);text-decoration:none;letter-spacing:-.01em; }
+    .logo-box {
+      width:32px;height:32px;border-radius:9px;
+      background:linear-gradient(145deg,var(--accent2),var(--accent));
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 18px rgba(255,95,30,.5);
+      animation:glow 3.5s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%,100% { box-shadow:0 4px 18px rgba(255,95,30,.5); }
+      50%      { box-shadow:0 4px 30px rgba(255,155,40,.75); }
+    }
+
+    .hdr-pills { display:flex;gap:8px; }
+    .hdr-pill {
+      padding:5px 13px;border-radius:99px;font-size:.72rem;font-weight:500;
+      background:var(--glass);border:1px solid var(--glass-border);color:var(--text-2);
+      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    }
+
+    /* ── HERO ── */
+    .hero { padding:76px 36px 52px;text-align:center; }
+    .eyebrow {
+      display:inline-flex;align-items:center;gap:7px;margin-bottom:22px;
+      padding:6px 16px;border-radius:99px;
+      background:rgba(255,107,43,.1);border:1px solid rgba(255,107,43,.28);
+      font-size:.73rem;font-weight:600;color:var(--accent2);letter-spacing:.07em;text-transform:uppercase;
+    }
+    .eyebrow-dot { width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.85)} }
+
+    .hero h1 {
+      font-size:clamp(2.1rem,5vw,3.7rem);font-weight:800;letter-spacing:-.035em;line-height:1.08;
+      color:var(--text);margin-bottom:18px;
+    }
+    .grad { background:linear-gradient(95deg,var(--accent2) 0%,var(--accent) 45%,#ff3f66 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .hero p { font-size:1rem;color:var(--text-2);max-width:500px;margin:0 auto;line-height:1.72;font-weight:300; }
+
+    /* ── LAYOUT ── */
+    .layout { max-width:1180px;margin:0 auto;padding:0 36px 100px;display:grid;grid-template-columns:1fr 334px;gap:26px;align-items:start; }
+
+    /* ── GLASS CARD ── */
+    .gc {
+      background:var(--glass);
+      backdrop-filter:blur(32px) saturate(1.5);
+      -webkit-backdrop-filter:blur(32px) saturate(1.5);
+      border:1px solid var(--glass-border);
+      border-radius:var(--r);
+      overflow:hidden;
+      transition:border-color .3s;
+    }
+    .gc:hover { border-color:var(--glass-border-h); }
+
+    /* ── FORM STEPS ── */
+    .step { padding:30px 34px;border-bottom:1px solid rgba(255,255,255,.055); }
+    .step:last-of-type { border-bottom:none; }
+
+    .step-hdr { display:flex;align-items:center;gap:13px;margin-bottom:26px; }
+    .step-n {
+      width:34px;height:34px;border-radius:10px;flex-shrink:0;
+      background:linear-gradient(135deg,rgba(255,107,43,.22),rgba(255,160,40,.12));
+      border:1px solid rgba(255,107,43,.32);
+      display:flex;align-items:center;justify-content:center;
+      font-size:.8rem;font-weight:700;color:var(--accent2);
+    }
+    .step-hdr h2 { font-size:1rem;font-weight:600;letter-spacing:-.01em;color:var(--text); }
+    .step-hdr small { font-size:.74rem;color:var(--text-m);font-weight:300;display:block;margin-top:2px; }
+
+    /* ── GRIDS ── */
+    .g2 { display:grid;grid-template-columns:1fr 1fr;gap:13px; }
+    .g3 { display:grid;grid-template-columns:2fr 1fr 1fr;gap:13px; }
+    .s2 { grid-column:1/-1; }
+
+    /* ── FIELDS ── */
+    .f { display:flex;flex-direction:column;gap:6px; }
+    .f label { font-size:.69rem;font-weight:600;color:var(--text-m);text-transform:uppercase;letter-spacing:.075em; }
+    .f label .r { color:var(--accent);margin-left:2px; }
+
+    .f input, .f select, .f textarea {
+      width:100%;padding:11px 14px;
+      background:var(--in-bg);border:1px solid var(--in-bd);border-radius:var(--rs);
+      font-family:'Sora',sans-serif;font-size:.88rem;font-weight:400;color:var(--text);
+      transition:border-color .2s,background .2s,box-shadow .2s;outline:none;
+      -webkit-appearance:none;appearance:none;
+    }
+    .f input::placeholder, .f textarea::placeholder { color:var(--text-m);font-weight:300; }
+    .f input:focus, .f select:focus, .f textarea:focus {
+      border-color:rgba(255,107,43,.65);
+      background:rgba(255,255,255,.085);
+      box-shadow:0 0 0 3px rgba(255,107,43,.1);
+    }
+    .f input.e { border-color:rgba(255,70,70,.65);background:rgba(255,50,50,.07); }
+    .f select {
+      cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='rgba(155,180,220,.45)' stroke-width='1.7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;
+    }
+    .f select option { background:#0d1f3c;color:var(--text); }
+    .f textarea { resize:vertical;min-height:88px;line-height:1.6; }
+
+    /* Menge with unit */
+    .inp-suf { position:relative; }
+    .inp-suf input { padding-right:52px; }
+    .inp-suf .suf { position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:.8rem;font-weight:600;color:var(--accent2);pointer-events:none; }
+
+    /* ── SUBMIT ── */
+    .sub-wrap {
+      padding:26px 34px 34px;
+      background:linear-gradient(180deg,rgba(255,255,255,.03) 0%,transparent 100%);
+    }
+    .btn {
+      width:100%;padding:15px 22px;
+      background:linear-gradient(135deg,#ff6b2b 0%,#ff9c44 100%);
+      border:none;border-radius:var(--rs);
+      font-family:'Sora',sans-serif;font-size:.93rem;font-weight:700;color:#fff;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;
+      letter-spacing:-.01em;
+      box-shadow:0 8px 28px rgba(255,95,30,.44),0 2px 6px rgba(0,0,0,.22);
+      transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;
+    }
+    .btn::before { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent);opacity:0;transition:opacity .2s; }
+    .btn:hover:not(:disabled)::before { opacity:1; }
+    .btn:hover:not(:disabled) { transform:translateY(-2px);box-shadow:0 14px 36px rgba(255,95,30,.54); }
+    .btn:active { transform:translateY(0); }
+    .btn:disabled { opacity:.58;cursor:not-allowed; }
+
+    .gdpr { margin-top:12px;font-size:.7rem;color:var(--text-m);text-align:center;line-height:1.7;font-weight:300; }
+    .gdpr a { color:rgba(195,210,240,.48);text-underline-offset:3px; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { display:flex;flex-direction:column;gap:18px; }
+
+    .sc { padding:24px; }
+
+    .sc h3 {
+      font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:16px;
+      letter-spacing:-.01em;display:flex;align-items:center;gap:9px;
+    }
+    .sc h3 .ico {
+      width:27px;height:27px;border-radius:8px;flex-shrink:0;
+      background:rgba(255,107,43,.16);border:1px solid rgba(255,107,43,.24);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .sc h3 .ico svg { color:var(--accent); }
+
+    /* price */
+    .pt { width:100%;border-collapse:collapse; }
+    .pt td { padding:8px 0;font-size:.81rem;border-bottom:1px solid rgba(255,255,255,.05); }
+    .pt tr:last-child td { border:none; }
+    .pt td:first-child { color:var(--text-2);font-weight:300; }
+    .pt td:last-child { text-align:right;font-weight:600;color:var(--text); }
+    .pt tr.best td { color:var(--accent2); }
+    .pnote { margin-top:10px;font-size:.68rem;color:var(--text-m);line-height:1.65;font-weight:300; }
+
+    /* hotline */
+    .hotline { background:linear-gradient(135deg,rgba(255,107,43,.13),rgba(255,155,40,.07));border-color:rgba(255,107,43,.22) !important; }
+    .phn { font-size:1.45rem;font-weight:800;letter-spacing:-.025em;color:var(--accent2);margin:7px 0 5px; }
+    .hsub { font-size:.73rem;color:var(--text-m);font-weight:300;line-height:1.65; }
+
+    /* features */
+    .fl { display:flex;flex-direction:column;gap:10px; }
+    .fi { display:flex;align-items:flex-start;gap:9px;font-size:.8rem;color:var(--text-2);line-height:1.5;font-weight:300; }
+    .fd {
+      width:17px;height:17px;border-radius:50%;flex-shrink:0;margin-top:1px;
+      background:rgba(255,107,43,.15);border:1px solid rgba(255,107,43,.28);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .fd svg { color:var(--accent); }
+
+    /* ── SUCCESS OVERLAY ── */
+    .ov {
+      display:none;position:fixed;inset:0;z-index:1000;
+      align-items:center;justify-content:center;padding:24px;
+      background:rgba(4,10,24,.78);
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    }
+    .ov.show { display:flex;animation:fadeIn .28s ease; }
+    @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+
+    .sbox {
+      max-width:450px;width:100%;text-align:center;
+      background:rgba(12,22,46,.92);
+      backdrop-filter:blur(44px);-webkit-backdrop-filter:blur(44px);
+      border:1px solid rgba(255,255,255,.13);border-radius:24px;
+      padding:50px 42px;
+      box-shadow:0 32px 80px rgba(0,0,0,.52),0 0 0 1px rgba(255,107,43,.09);
+      animation:slideUp .32s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes slideUp { from{transform:translateY(22px);opacity:0}to{transform:translateY(0);opacity:1} }
+
+    .sring {
+      width:76px;height:76px;margin:0 auto 26px;border-radius:50%;
+      background:linear-gradient(135deg,rgba(52,199,89,.22),rgba(52,199,89,.08));
+      border:1.5px solid rgba(52,199,89,.38);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 32px rgba(52,199,89,.18);
+    }
+    .sbox h2 { font-size:1.55rem;font-weight:800;letter-spacing:-.03em;margin-bottom:11px; }
+    .sbox p { font-size:.86rem;color:var(--text-2);line-height:1.68;font-weight:300; }
+
+    .onr {
+      display:inline-block;margin:20px 0;padding:9px 20px;border-radius:99px;
+      background:rgba(255,107,43,.11);border:1px solid rgba(255,107,43,.24);
+      font-size:.88rem;font-weight:700;color:var(--accent2);letter-spacing:.02em;
+    }
+    .bcl {
+      margin-top:18px;padding:12px 34px;
+      background:linear-gradient(135deg,#ff6b2b,#ff9c44);
+      border:none;border-radius:10px;
+      font-family:'Sora',sans-serif;font-weight:700;font-size:.86rem;color:#fff;
+      cursor:pointer;box-shadow:0 6px 20px rgba(255,95,30,.38);
+      transition:transform .15s,box-shadow .15s;
+    }
+    .bcl:hover { transform:scale(1.03);box-shadow:0 8px 26px rgba(255,95,30,.5); }
+
+    /* ── FOOTER ── */
+    footer { padding:18px 36px;text-align:center;font-size:.7rem;color:var(--text-m);border-top:1px solid rgba(255,255,255,.05);font-weight:300; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:920px) {
+      .layout { grid-template-columns:1fr; }
+      .sidebar { display:grid;grid-template-columns:1fr 1fr; }
+      .hdr-pills { display:none; }
+    }
+    @media(max-width:600px) {
+      .g2,.g3 { grid-template-columns:1fr; }
+      .step { padding:22px 18px; }
+      .sub-wrap { padding:18px; }
+      .sidebar { grid-template-columns:1fr; }
+      .sbox { padding:34px 22px; }
+      .hero { padding:50px 20px 38px; }
+      .layout { padding:0 18px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+  <div class="orb o4"></div>
+</div>
+<div class="noise"></div>
+
+<div class="wrap">
+
+  <header>
+    <div class="hdr">
+      <a class="logo" href="#">
+        <div class="logo-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12 2C12 2 5 9.5 5 14.5a7 7 0 0014 0C19 9.5 12 2 12 2z"/><path d="M12 11c0 0-3.5 4-3.5 5.5a3.5 3.5 0 007 0C15.5 15 12 11 12 11z" fill="rgba(255,210,120,.9)"/></svg>
+        </div>
+        Heizölbestellung
+      </a>
+      <div class="hdr-pills">
+        <div class="hdr-pill">🇩🇪 Lieferung deutschlandweit</div>
+        <div class="hdr-pill">DIN 51603 Qualität</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>Schnell · Zuverlässig · Fair</div>
+    <h1>Heizöl bestellen –<br><span class="grad">direkt &amp; unkompliziert</span></h1>
+    <p>Füllen Sie das Formular aus und erhalten Sie sofort eine Bestätigung per E-Mail. Ihr Auftrag wird umgehend bearbeitet.</p>
+  </section>
+
+  <div class="layout">
+
+    <!-- FORM -->
+    <div class="gc">
+      <form id="orderForm" novalidate>
+
+        <!-- 01 -->
+        <div class="step">
+          <div class="step-hdr">
+            <div class="step-n">01</div>
+            <div><h2>Persönliche Daten</h2><small>Kontaktinformationen für Rückfragen</small></div>
+          </div>
+          <div class="g2">
+            <div class="f">
+              <label>Anrede <span class="r">*</span></label>
+              <select name="anrede" required>
+                <option value="">Bitte wählen …</option>
+                <option>Herr</option><option>Frau</option>
+                <option>Divers</option><option>Firma</option>
+              </select>
+            </div>
+            <div class="f">
+              <label>Telefon <span class="r">*</span></label>
+              <input type="tel" name="telefon" placeholder="+49 123 456789" required>
+            </div>
+            <div class="f">
+              <label>Vorname <span class="r">*</span></label>
+              <input type="text" name="vorname" placeholder="Max" required>
+            </div>
+            <div class="f">
+              <label>Nachname <span class="r">*</span></label>
+              <input type="text" name="nachname" placeholder="Mustermann" required>
+            </div>
+            <div class="f s2">
+              <label>E-Mail-Adresse <span class="r">*</span></label>
+              <input type="email" name="email" placeholder="max@mustermann.de" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 02 -->
+        <div class="step">
+          <div class="step-hdr">
+            <div class="step-n">02</div>
+            <div><h2>Lieferadresse</h2><small>Wohin soll das Heizöl geliefert werden?</small></div>
+          </div>
+          <div class="g3">
+            <div class="f">
+              <label>Straße <span class="r">*</span></label>
+              <input type="text" name="strasse" placeholder="Musterstraße" required>
+            </div>
+            <div class="f">
+              <label>Hausnr. <span class="r">*</span></label>
+              <input type="text" name="hausnr" placeholder="12a" required>
+            </div>
+            <div class="f">
+              <label>PLZ <span class="r">*</span></label>
+              <input type="text" name="plz" placeholder="12345" maxlength="5" required>
+            </div>
+            <div class="f s2">
+              <label>Ort <span class="r">*</span></label>
+              <input type="text" name="ort" placeholder="Musterstadt" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 03 -->
+        <div class="step">
+          <div class="step-hdr">
+            <div class="step-n">03</div>
+            <div><h2>Bestelldetails</h2><small>Angaben zur gewünschten Menge und Anlage</small></div>
+          </div>
+          <div class="g2">
+            <div class="f">
+              <label>Menge <span class="r">*</span></label>
+              <div class="inp-suf">
+                <input type="number" name="menge" placeholder="2000" min="500" max="99999" required>
+                <span class="suf">Liter</span>
+              </div>
+            </div>
+            <div class="f">
+              <label>Tankart <span class="r">*</span></label>
+              <select name="tankart" required>
+                <option value="">Bitte wählen …</option>
+                <option>Kunststofftank (1 Kammer)</option>
+                <option>Kunststofftank (2 Kammern)</option>
+                <option>Stahltank</option>
+                <option>Erdtank</option>
+              </select>
+            </div>
+            <div class="f s2">
+              <label>Einfüllstutzen <span class="r">*</span></label>
+              <select name="einfuellstutzen" required>
+                <option value="">Bitte wählen …</option>
+                <option>Im Freien / Außenwand</option>
+                <option>Im Keller (Schlauch bis 40 m)</option>
+                <option>Im Keller (Schlauch bis 80 m)</option>
+              </select>
+            </div>
+            <div class="f s2">
+              <label>Bemerkungen</label>
+              <textarea name="bemerkung" placeholder="Zufahrtsbeschränkungen, Abstellmöglichkeiten, sonstige Hinweise …"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="sub-wrap">
+          <button type="submit" class="btn" id="submitBtn">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+            Jetzt verbindlich bestellen
+          </button>
+          <p class="gdpr">🔒 Daten werden ausschließlich zur Auftragsabwicklung genutzt und nicht weitergegeben.<br>
+          Mit der Bestellung stimmen Sie unseren <a href="#">AGB</a> und der <a href="#">Datenschutzerklärung</a> zu.</p>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="gc sc">
+        <h3><span class="ico"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span>Aktuelle Preise</h3>
+        <table class="pt">
+          <tr><td>500 – 999 L</td><td>99,9 ct/L</td></tr>
+          <tr class="best"><td>1.000 – 2.999 L</td><td>95,5 ct/L</td></tr>
+          <tr><td>3.000 – 5.999 L</td><td>92,8 ct/L</td></tr>
+          <tr><td>ab 6.000 L</td><td>Auf Anfrage</td></tr>
+        </table>
+        <p class="pnote">Preise inkl. MwSt., zzgl. Lieferpauschale 19 €. Tagespreise können abweichen.</p>
+      </div>
+
+      <div class="gc sc hotline">
+        <h3><span class="ico"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 014.69 12 19.79 19.79 0 011.65 3.4 2 2 0 013.64 2h3a2 2 0 012 1.72c.127.96.361 1.9.7 2.81a2 2 0 01-.45 2.11L7.91 9.91A16 16 0 0022 16.92z"/></svg></span>Persönliche Beratung</h3>
+        <div class="phn">0800 / 123 456 7</div>
+        <p class="hsub">Mo – Fr &nbsp;7 – 18 Uhr · Sa &nbsp;8 – 13 Uhr<br>Kostenlos aus Festnetz &amp; Mobilfunknetz</p>
+      </div>
+
+      <div class="gc sc">
+        <h3><span class="ico"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Unsere Leistungen</h3>
+        <div class="fl">
+          <div class="fi"><div class="fd"><svg width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Sofortige E-Mail-Bestätigung</div>
+          <div class="fi"><div class="fd"><svg width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Lieferung deutschlandweit</div>
+          <div class="fi"><div class="fd"><svg width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Qualität nach DIN 51603</div>
+          <div class="fi"><div class="fd"><svg width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Faire Preise, keine versteckten Kosten</div>
+          <div class="fi"><div class="fd"><svg width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>DSGVO-konforme Verarbeitung</div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <footer>© 2025 Heizölbestellung · Musterstraße 1, 12345 Musterstadt · Alle Angaben ohne Gewähr</footer>
+
+</div>
+
+<!-- SUCCESS -->
+<div class="ov" id="ov">
+  <div class="sbox">
+    <div class="sring">
+      <svg width="32" height="32" fill="none" stroke="#34c759" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Bestellung eingegangen!</h2>
+    <p>Vielen Dank. Alle Details wurden notiert und eine Bestätigung an Ihre E-Mail-Adresse gesendet.</p>
+    <div class="onr" id="onr">Bestell-Nr.: –</div>
+    <p style="font-size:.76rem">Bitte prüfen Sie auch Ihren Spam-Ordner.<br>Wir melden uns schnellstmöglich bei Ihnen.</p>
+    <button class="bcl" onclick="closeOv()">Zurück zur Startseite</button>
+  </div>
+</div>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Heizölbestellung</title>
+</head>
+<body>
+
+<form id="orderForm">
+  <input name="anrede" required placeholder="Anrede">
+  <input name="vorname" required placeholder="Vorname">
+  <input name="nachname" required placeholder="Nachname">
+  <input name="email" type="email" required placeholder="E-Mail">
+  <input name="telefon" required placeholder="Telefon">
+
+  <input name="strasse" required placeholder="Straße">
+  <input name="hausnr" required placeholder="Hausnr">
+  <input name="plz" required placeholder="PLZ">
+  <input name="ort" required placeholder="Ort">
+
+  <input name="menge" type="number" required placeholder="Liter">
+  <input name="tankart" required placeholder="Tankart">
+  <input name="einfuellstutzen" required placeholder="Einfüllstutzen">
+  <textarea name="bemerkung" placeholder="Bemerkung"></textarea>
+
+  <button type="submit" id="submitBtn">Jetzt verbindlich bestellen</button>
+</form>
+
+<div id="ov" style="display:none">
+  <h2>Bestellung erfolgreich</h2>
+  <p id="onr"></p>
+  <button onclick="closeOv()">Schließen</button>
+</div>
+
+<script>
+document.getElementById('orderForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const data = Object.fromEntries(new FormData(this));
+
+  const res = await fetch("/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  const json = await res.json();
+
+  document.getElementById('onr').textContent =
+    "Bestell-Nr.: " + json.order_id;
+
+  document.getElementById('ov').style.display = "block";
+  this.reset();
+});
+
+function closeOv() {
+  document.getElementById('ov').style.display = "none";
+}
+</script>
+
+</body>
+</html>
+</body>
+</html>
