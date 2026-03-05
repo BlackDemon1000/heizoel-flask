@@ -88,11 +88,13 @@ def update_excel_status(order_id: str, new_status: str):
 # -------------------------------------------------
 def send_confirmation_mail(order: dict, order_id: str):
     """
-    Sendet die Bestätigungsmail über das iCloud-Konto heizoel@beierhq.de.
-    iCloud-SMTP: smtp.mail.me.com : 587 (STARTTLS)
+    Sendet die Bestätigungsmail über iCloud.
+    Login:   cb1.10.10.10@icloud.com  (ICLOUD_LOGIN)
+    Absender: heizoel@beierhq.de      (MAIL_USER)
     """
-    mail_user = os.getenv("MAIL_USER")   # heizoel@beierhq.de
-    mail_pass = os.getenv("MAIL_PASS")   # App-spezifisches iCloud-Passwort
+    icloud_login = os.getenv("ICLOUD_LOGIN")  # cb1.10.10.10@icloud.com
+    mail_user    = os.getenv("MAIL_USER")     # heizoel@beierhq.de (Absender)
+    mail_pass    = os.getenv("MAIL_PASS")     # App-spezifisches Passwort
 
     msg = EmailMessage()
     msg["From"]    = mail_user
@@ -145,7 +147,7 @@ Ihr Heizöl-Service
     with smtplib.SMTP("smtp.mail.me.com", 587) as server:
         server.ehlo()
         server.starttls()
-        server.login(mail_user, mail_pass)
+        server.login(icloud_login, mail_pass)  # Login mit @icloud.com
         server.send_message(msg)
 
     print(f"[Mail] Bestätigungsmail gesendet an {order['email']} (Order: {order_id})")
@@ -192,13 +194,14 @@ def poll_imap():
     liest ungelesene Nachrichten aus dem Ordner "heizoel" und
     aktualisiert den Excel-Status, wenn "BESTÄTIGEN" im Body steht.
     """
-    mail_user = os.getenv("MAIL_USER")
-    mail_pass = os.getenv("MAIL_PASS")
+    mail_user  = os.getenv("MAIL_USER")     # heizoel@beierhq.de (nur für Logs)
+    icloud_login = os.getenv("ICLOUD_LOGIN")  # cb1.10.10.10@icloud.com
+    mail_pass  = os.getenv("MAIL_PASS")
 
     while True:
         try:
             with imaplib.IMAP4_SSL(IMAP_SERVER, IMAP_PORT) as imap:
-                imap.login(mail_user, mail_pass)
+                imap.login(icloud_login, mail_pass)
 
                 # Ordner auswählen
                 status, _ = imap.select(f'"{IMAP_FOLDER}"')
